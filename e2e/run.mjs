@@ -13,7 +13,9 @@ import { createRequire } from 'node:module';
 const { chromium } = createRequire(import.meta.url)('playwright');
 
 const PORT = 4391;
-const BASE = `http://localhost:${PORT}`;
+// E2E_BASE_URL runs the same checks against a deployed site instead of a local preview.
+const REMOTE = process.env.E2E_BASE_URL;
+const BASE = REMOTE ? REMOTE.replace(/\/$/, '') : `http://localhost:${PORT}`;
 const work = join(tmpdir(), `trackmend-e2e-${process.pid}`);
 const shots = process.env.E2E_SHOTS;
 mkdirSync(work, { recursive: true });
@@ -36,8 +38,8 @@ const check = (cond, label) => {
   if (!cond) failures.push(label);
 };
 
-const server = spawn('npx', ['astro', 'preview', '--port', String(PORT)], { stdio: 'pipe' });
-await new Promise((resolve, reject) => {
+const server = REMOTE ? null : spawn('npx', ['astro', 'preview', '--port', String(PORT)], { stdio: 'pipe' });
+if (server) await new Promise((resolve, reject) => {
   const t = setTimeout(() => reject(new Error('preview server did not start')), 30000);
   server.stdout.on('data', (d) => {
     if (String(d).includes('localhost')) {
@@ -199,7 +201,7 @@ try {
   check(offsite.length === 0, `no requests left the site's origin ${offsite.join(' | ')}`);
 } finally {
   await browser.close();
-  server.kill();
+  server?.kill();
 }
 
 if (failures.length) {
