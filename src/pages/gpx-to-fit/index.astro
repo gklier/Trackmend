@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ToolPanel from '../../components/ToolPanel.astro';
+---
+
+<Layout
+  title="Convert GPX to FIT in your browser"
+  description="Turn a recorded GPX track into a FIT activity file with distance, laps and a session summary. Runs locally in your browser."
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'GPX to FIT converter',
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (web browser)',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  }}
+>
+  <h1>Convert GPX to FIT</h1>
+  <p class="lede">
+    Turn a recorded GPX track into a FIT activity. Pick the activity type first, since GPX does not record it in a
+    standard way.
+  </p>
+
+  <ToolPanel tool="gpx2fit" />
+
+  <div class="prose">
+    <h2>What the FIT file contains</h2>
+    <ul>
+      <li>One record per track point: time, position, elevation, and heart rate, cadence, temperature and power where the GPX has them.</li>
+      <li>Distance, calculated point to point from the positions, because GPX does not store it.</li>
+      <li>One lap and one session covering the whole track, with totals and averages.</li>
+    </ul>
+
+    <h2>This makes an activity, not a course</h2>
+    <p>
+      The output is a record of something that happened. That needs a time on every point. A route drawn in a planner
+      has positions but no times, and the tool will refuse it with that explanation. It does not write FIT course
+      files for following a route on a device.
+    </p>
+    <p>
+      Speed is not written per point; software that needs it derives it from distance and time. Pauses are not
+      detected, so moving time equals elapsed time.
+    </p>
+    <p>Going the other way is <a href="/fit-to-gpx/">FIT to GPX</a>.</p>
+  </div>
+</Layout>

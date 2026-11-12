@@ -1,0 +1,61 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Why FIT files get corrupted" description="How a FIT file is built, why an interrupted save makes platforms reject it, and what can and cannot be recovered.">
+  <article class="prose">
+    <h1>Why FIT files get corrupted</h1>
+    <p class="lede">A FIT file that Garmin Connect or Strava refuses usually did not fail at random. It was cut off before the device finished writing it.</p>
+
+    <h2>How a FIT file is built</h2>
+    <ul>
+      <li>A header at the start, which includes a field for the size of the data that follows.</li>
+      <li>A stream of messages. Definition messages describe the layout of a kind of record, and data messages carry the values, such as one record per second with time, position and heart rate.</li>
+      <li>A checksum (CRC) at the very end, covering the file's contents.</li>
+    </ul>
+    <p>Summary messages, which are the lap, session and activity messages, are normally written at the end, when you press save. They hold the totals that platforms show: start time, duration, distance and averages.</p>
+
+    <h2>What an interrupted save does</h2>
+    <p>The device writes records while you move, so the body of the file is mostly there even if something goes wrong. If the battery dies, the device crashes or you unplug it during a sync, three things can be missing at once:</p>
+    <ol>
+      <li>The summary messages, because they were never written.</li>
+      <li>A correct data size in the header.</li>
+      <li>The final checksum.</li>
+    </ol>
+    <p>A platform that validates the file sees a size or checksum that does not match, or no session, and rejects it. The recorded data may still be sitting in the file.</p>
+
+    <h2>What can and cannot be recovered</h2>
+    <table>
+      <thead><tr><th>Recoverable</th><th>Not recoverable</th></tr></thead>
+      <tbody>
+        <tr><td>Every record written before the point of damage</td><td>Anything after the first unreadable record</td></tr>
+        <tr><td>Totals, rebuilt from those records</td><td>Data the device never wrote</td></tr>
+        <tr><td>A valid header size and checksum</td><td>The original summary values, if they were lost</td></tr>
+      </tbody>
+    </table>
+    <p>If the sport was stored only in the lost summary, the tool cannot know it, so you choose it.</p>
+
+    <h2>Trying the repair tool</h2>
+    <ol>
+      <li>Get the original file from the device or platform. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>.</li>
+      <li>Open <a href="/repair-fit-file/">the FIT repair tool</a> and add the file. Everything runs in your browser, files are never uploaded and no account is needed.</li>
+      <li>The tool finds the header and reads records until the first unreadable one. It keeps everything before that.</li>
+      <li>It rebuilds the missing lap, session and activity messages from the recovered records, using start time, elapsed time, distance, and average and maximum heart rate where available.</li>
+      <li>It writes a correct header size and checksum. Download the result.</li>
+    </ol>
+    <p>If the activity was split in two by the failure, you can then <a href="/guides/combine-two-activities/">combine the parts</a>.</p>
+    <p>Repair output passes an independent FIT decoder's strict validation. We have not tested uploads to Garmin Connect or Strava, so a platform could still decline a file for its own reasons.</p>
+
+    <h2>Reducing the risk</h2>
+    <ul>
+      <li>Start long activities with a full battery, and save or end the activity before the battery gets very low.</li>
+      <li>Do not unplug a device while it is syncing or copying files.</li>
+      <li>Copy the files from the device to your computer before deleting anything.</li>
+    </ul>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://developer.garmin.com/fit/overview/" rel="noopener">https://developer.garmin.com/fit/overview/</a> (general description of FIT messages and file types)</li>
+      <li>The header, checksum and message layout described above are what this site's own FIT reader relies on. That reader is tested against real device recordings and against a separate open-source decoder.</li>
+    </ul>
+  </article>
+</Layout>

@@ -1,0 +1,142 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../config';
+
+const tools = [
+  {
+    href: '/repair-fit-file/',
+    name: 'Repair a FIT file',
+    text: 'Recover a recording that was cut off or will not upload. Rebuilds the missing summary and checksum.',
+    types: '.fit',
+  },
+  {
+    href: '/merge-fit-files/',
+    name: 'Join activities',
+    text: 'Turn a ride or run that was split into several recordings back into one activity.',
+    types: '.fit  .gpx',
+  },
+  {
+    href: '/fit-to-gpx/',
+    name: 'FIT to GPX',
+    text: 'Get a GPX track, with heart rate, cadence and power, out of a device recording.',
+    types: '.fit → .gpx',
+  },
+  {
+    href: '/gpx-to-fit/',
+    name: 'GPX to FIT',
+    text: 'Turn a recorded GPX track into a FIT activity file.',
+    types: '.gpx → .fit',
+  },
+];
+---
+
+<Layout
+  title={`${site.name}: repair, join and convert FIT and GPX files in your browser`}
+  description="Free tools for Garmin, Wahoo and Strava activity files. Repair a corrupt FIT file, join split activities, convert between FIT and GPX. Files stay on your device."
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.name,
+    description: site.tagline,
+  }}
+>
+  <h1>Fix activity files without handing them to anyone.</h1>
+  <p class="lede">
+    Repair a recording your watch did not finish saving, join a ride that got split in two, or convert between FIT and
+    GPX. The work is done by your browser, on your device. The files are never uploaded.
+  </p>
+
+  <ol class="tools">
+    {
+      tools.map((t) => (
+        <li>
+          <a href={t.href}>
+            <span class="t-name">{t.name}</span>
+            <span class="t-text">{t.text}</span>
+            <span class="t-types">{t.types}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="prose">
+    <h2>How it works</h2>
+    <p>
+      When you choose a file, the page reads it directly from your disk, processes it in this tab, and gives you the
+      result as a download. There is no server step, so there is no upload limit, no queue and no account. You can
+      load a tool page, switch off your connection, and it will still work.
+    </p>
+    <p>
+      An activity file holds where you were, second by second, usually starting and ending at your front door. That is
+      a good reason not to send it to a website you found five minutes ago, and it is the reason this one is built
+      the way it is.
+    </p>
+
+    <h2>What it will not do</h2>
+    <ul>
+      <li>
+        Recover data that was never written. If the device lost power at kilometre 30, the repaired file ends at
+        kilometre 30.
+      </li>
+      <li>
+        Blend two recordings of the same activity, such as heart rate from a watch into a ride from a bike computer.
+        Joining is for recordings made one after another.
+      </li>
+      <li>Upload anything to Garmin Connect or Strava for you. You get a file; you choose where it goes.</li>
+    </ul>
+
+    <h2>How the output is checked</h2>
+    <p>
+      The code is tested against real recordings from Garmin watches and bike computers. Files the tools write are read back by a
+      separate, independently written FIT decoder running in strict mode, which rejects a file with a wrong checksum
+      or an incomplete record. That shows the files are structurally valid FIT. It does not guarantee how any
+      particular platform will treat them, so look over the summary the tool shows you before you upload.
+    </p>
+  </div>
+</Layout>
+
+<style>
+  .tools {
+    list-style: none;
+    padding: 0;
+    margin: 2.5rem 0 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .tools a {
+    display: grid;
+    grid-template-columns: 13rem 1fr 7.5rem;
+    gap: 0.25rem 1.5rem;
+    align-items: baseline;
+    padding: 1.1rem 0.25rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+  .tools a:hover {
+    color: inherit;
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+  .t-name {
+    font: 600 1.3rem var(--serif);
+  }
+  .tools a:hover .t-name {
+    color: var(--accent);
+  }
+  .t-text {
+    color: var(--muted);
+  }
+  .t-types {
+    font: 0.82rem var(--mono);
+    color: var(--muted);
+    white-space: pre;
+    text-align: right;
+  }
+  @media (max-width: 44rem) {
+    .tools a {
+      grid-template-columns: 1fr;
+    }
+    .t-types {
+      text-align: left;
+    }
+  }
+</style>

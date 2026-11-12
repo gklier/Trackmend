@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Combine two activities into one" description="How to turn one ride or run that was recorded as two activities into a single activity, and what happens to distance, time and laps.">
+  <article class="prose">
+    <h1>How to combine two activities into one</h1>
+    <p class="lede">If a watch crashed, you stopped and restarted, or a bike computer split a long ride, you end up with two recordings of one outing. You can join them into one file and upload that instead.</p>
+
+    <h2>Steps</h2>
+    <ol>
+      <li>Export the original file of each activity. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>.</li>
+      <li>Open <a href="/merge-fit-files/">the FIT merge tool</a> and add both files. It runs in your browser and nothing is uploaded.</li>
+      <li>Download the joined file.</li>
+      <li>Delete the two originals on the platform (see below), then upload the joined file.</li>
+    </ol>
+    <p>Keep copies of the two original files on your computer before you delete anything online.</p>
+
+    <h2>What the join does</h2>
+    <p>The tool is for activities recorded one after another. It orders the files by start time and keeps the original records.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Result in the joined file</th></tr></thead>
+      <tbody>
+        <tr><td>Distance</td><td>Continues across the join, so the second part does not restart at zero</td></tr>
+        <tr><td>Moving (timer) time</td><td>The sum of the parts</td></tr>
+        <tr><td>Elapsed time</td><td>Includes the break between the two recordings</td></tr>
+        <tr><td>Laps</td><td>Existing laps are kept</td></tr>
+        <tr><td>Session</td><td>One session is written for the whole activity</td></tr>
+      </tbody>
+    </table>
+    <p>If the two files overlap in time, the tool refuses them. It does not blend two devices that recorded the same activity. Connect IQ developer fields from the second and later files are dropped. GPX files can be joined as well.</p>
+    <p>Because moving time is the sum of the parts, a 20 minute stop between two recordings shows up in elapsed time but not in moving time.</p>
+
+    <h2>Duplicates on Strava and Garmin Connect</h2>
+    <p>Platforms try not to hold the same activity twice, and a joined file starts at the same moment as the first original. Deleting the originals first is the approach that other users report for both platforms.</p>
+    <p>What we could and could not confirm:</p>
+    <ul>
+      <li>Strava's help page on activity flags says an activity that is a duplicate can be deleted, and that in the app the delete option is in the three-dot menu on the activity page. We did not find an official Strava page that describes exactly how an upload of a duplicate is rejected or flagged.</li>
+      <li>For Garmin Connect, we could not open Garmin's own support pages. The only sources we read were user posts on Garmin's forum, which report that an upload is refused as a duplicate until the original activity is deleted, and that deleted activities sometimes need to be removed twice. Treat that as user reports, not official documentation.</li>
+    </ul>
+    <p>Both platforms change their behavior and menus over time. If an upload is refused, check the platform's current help pages.</p>
+    <p>On Strava, the upload page accepts GPX, TCX and FIT files up to 25 MB. Choose Upload Activity, then File, from the plus icon at the top right.</p>
+    <p>Our tools have not been tested against uploads to Garmin Connect or Strava. The output files pass an independent FIT decoder's strict validation, and nothing more is claimed.</p>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://support.strava.com/en-us/articles/15401755-how-do-i-resolve-an-activity-flag-on-strava" rel="noopener">https://support.strava.com/en-us/articles/15401755-how-do-i-resolve-an-activity-flag-on-strava</a></li>
+      <li><a href="https://support.strava.com/en-us/articles/15402173-how-do-i-bulk-upload-activities-to-strava" rel="noopener">https://support.strava.com/en-us/articles/15402173-how-do-i-bulk-upload-activities-to-strava</a></li>
+      <li><a href="https://support.strava.com/en-us/articles/15402066-how-do-i-get-my-activities-to-strava" rel="noopener">https://support.strava.com/en-us/articles/15402066-how-do-i-get-my-activities-to-strava</a></li>
+      <li><a href="https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/125920/this-file-has-already-been-uploaded-error" rel="noopener">https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/125920/this-file-has-already-been-uploaded-error</a> (user forum thread, not official documentation)</li>
+    </ul>
+  </article>
+</Layout>

@@ -1,0 +1,88 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ToolPanel from '../../components/ToolPanel.astro';
+---
+
+<Layout
+  title="Repair a corrupt FIT file, free and in your browser"
+  description="Fix a Garmin or Wahoo FIT file that was cut off or will not upload. Recovers the readable records, rebuilds the summary and checksum. The file never leaves your device."
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'FIT file repair',
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (web browser)',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  }}
+>
+  <h1>Repair a FIT file</h1>
+  <p class="lede">
+    For recordings that stopped mid-save, show as zero bytes of data, or are refused on upload. Choose the file and
+    you will see what was wrong, what was recovered, and a repaired copy to download.
+  </p>
+
+  <ToolPanel tool="repair" />
+
+  <div class="prose">
+    <h2>What it fixes</h2>
+    <table>
+      <thead><tr><th>Problem</th><th>What the tool does</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>The recording was never finalised: the battery died, the device froze or restarted.</td>
+          <td>
+            Reads every complete record up to the cut, then rebuilds the lap, session and activity summary a platform
+            expects from those records.
+          </td>
+        </tr>
+        <tr>
+          <td>The header gives the wrong data size, often zero.</td>
+          <td>Measures the real data and writes the correct size.</td>
+        </tr>
+        <tr>
+          <td>The checksum at the end is missing or wrong.</td>
+          <td>Recalculates it.</td>
+        </tr>
+        <tr>
+          <td>The end of the file is blank padding or leftover data from the device's storage.</td>
+          <td>Stops at the last real record and leaves the rest out.</td>
+        </tr>
+        <tr>
+          <td>Stray bytes sit in front of the file header.</td>
+          <td>Finds the real start of the file.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>What it cannot fix</h2>
+    <p>
+      The tool keeps everything up to the first unreadable record and nothing after it. If the damage is in the
+      middle of the file, the part after the damage is lost even if it looks intact, because a FIT file can only be
+      read in order: each record depends on definitions that came before it. And it cannot bring back time the device
+      never wrote to storage.
+    </p>
+    <p>
+      The rebuilt summary covers distance, elapsed and moving time, average and maximum heart rate, average cadence
+      and power, and speed. Calories and total ascent are left blank instead of being guessed; most platforms work
+      those out again from the records.
+    </p>
+
+    <h2>Questions</h2>
+    <h3>It says my file is not damaged, but the upload still fails.</h3>
+    <p>
+      Then the cause is something else. The most common is that the platform already has that activity and treats
+      the upload as a duplicate. Another is a file that is valid but is not an activity, such as a course or a
+      settings file.
+    </p>
+    <h3>Why does it ask for the activity type?</h3>
+    <p>
+      Many devices store the sport only in the summary written when you press save. If that part was lost, the tool
+      has no way to tell a run from a ride, so it asks. If the sport survived, it is used without asking.
+    </p>
+    <h3>Is the original changed?</h3>
+    <p>No. The page can only read the file you pick. The repaired copy is a new download with <code>-repaired</code> in its name.</p>
+    <p>
+      For background on how these files break, read <a href="/guides/why-fit-files-get-corrupted/">why FIT files get corrupted</a>.
+    </p>
+  </div>
+</Layout>

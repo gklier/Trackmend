@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Export the original file of an activity" description="Where to find the original FIT file of an activity on Garmin Connect, Strava and on a Garmin device, and how it differs from a GPX export.">
+  <article class="prose">
+    <h1>How to export the original file of an activity</h1>
+    <p class="lede">Repairing, joining or converting an activity works best on the file your device actually recorded. This guide shows where to get that file from Garmin Connect, Strava and the device itself.</p>
+
+    <h2>Original file versus GPX export</h2>
+    <p>The original file is what the device wrote, usually a FIT file. It can hold everything the device recorded: laps, sessions, heart rate, cadence, power and sensor data. A GPX export is a conversion made by the platform. GPX is a simpler format built around a track of positions, so some data may not carry over. Whenever you have a choice, start from the original.</p>
+    <table>
+      <thead><tr><th>Source</th><th>What you get</th></tr></thead>
+      <tbody>
+        <tr><td>Garmin Connect, "Export File"</td><td>The device's native FIT file, delivered in a zip</td></tr>
+        <tr><td>Strava, "Export Original"</td><td>The file in the format it was originally uploaded in, often FIT</td></tr>
+        <tr><td>Strava, "Export GPX"</td><td>A GPX conversion</td></tr>
+        <tr><td>Device over USB</td><td>The FIT files as stored on the device</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Garmin Connect (web)</h2>
+    <ol>
+      <li>On a computer, sign in to Garmin Connect and open Activities.</li>
+      <li>Click the title of the activity to open its detail page. The list page only offers a CSV summary.</li>
+      <li>Click the gear icon in the upper right corner.</li>
+      <li>Choose Export File to get the native FIT version.</li>
+      <li>Garmin downloads a zip. Extract it to get the .fit file.</li>
+    </ol>
+    <p>Menu labels on Garmin Connect change from time to time, and other guides call this option Export Original. If you do not see the exact wording, look for the option that exports the original or native file.</p>
+
+    <h2>Strava (web)</h2>
+    <ol>
+      <li>Open the activity page on strava.com.</li>
+      <li>Open the more menu (the ellipsis) and choose Export Original.</li>
+    </ol>
+    <p>The file arrives in the format it was first uploaded in, which is often FIT. If it was uploaded as GPX, you get GPX. The same menu has Export GPX if you want a conversion. To download everything at once, Strava offers a full account download under Settings, My Account, Download your account. Strava emails a link, which can take a few hours.</p>
+
+    <h2>Directly from a Garmin watch or bike computer</h2>
+    <p>Connect the device to your computer with its USB cable. According to Garmin's manuals, it appears as a portable device, a removable drive or a removable volume. On a Mac, some models are not detected by default, and you need Garmin Express to work with files on the device.</p>
+    <p>Open the device and look inside the Garmin folder. Garmin says most file types have a named folder within it. The name of the folder that holds activities differs between models, so check the owner's manual for your device rather than relying on a path from memory. Copy the .fit files you need to your computer before disconnecting.</p>
+
+    <h2>Next steps</h2>
+    <p>Once you have the file, you can <a href="/repair-fit-file/">repair it</a>, <a href="/merge-fit-files/">merge it with another</a>, or <a href="/fit-to-gpx/">convert it to GPX</a>. All of these run in your browser and the files are never uploaded.</p>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://support.strava.com/hc/en-us/articles/216918437" rel="noopener">https://support.strava.com/hc/en-us/articles/216918437</a> (Strava export steps and formats)</li>
+      <li><a href="https://support.strava.com/en-us/articles/15402167-exporting-files-from-garmin-connect" rel="noopener">https://support.strava.com/en-us/articles/15402167-exporting-files-from-garmin-connect</a> (Garmin Connect web steps, "Export File", zip)</li>
+      <li><a href="https://www8.garmin.com/manuals/webhelp/GUID-08ACA9FC-DEE6-4C8D-8A95-F62181C512E9/EN-US/GUID-50017E96-C40C-471D-BE61-3A0C09E93916.html" rel="noopener">https://www8.garmin.com/manuals/webhelp/GUID-08ACA9FC-DEE6-4C8D-8A95-F62181C512E9/EN-US/GUID-50017E96-C40C-471D-BE61-3A0C09E93916.html</a> (Garmin Edge manual, USB file transfer)</li>
+    </ul>
+  </article>
+</Layout>

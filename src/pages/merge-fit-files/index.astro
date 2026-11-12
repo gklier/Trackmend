@@ -1,0 +1,65 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ToolPanel from '../../components/ToolPanel.astro';
+---
+
+<Layout
+  title="Join split FIT or GPX activities into one file"
+  description="Combine two or more Garmin, Wahoo or Strava recordings of one ride or run into a single activity. Works with FIT and GPX. Runs in your browser; nothing is uploaded."
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Join activity files',
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (web browser)',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  }}
+>
+  <h1>Join split activities</h1>
+  <p class="lede">
+    You pressed save at the café, or the device restarted halfway, and one outing became two recordings. Add the
+    pieces here and download them as a single activity.
+  </p>
+
+  <ToolPanel tool="merge" />
+
+  <div class="prose">
+    <h2>What happens to your data</h2>
+    <table>
+      <thead><tr><th></th><th>In the joined file</th></tr></thead>
+      <tbody>
+        <tr><td>Order</td><td>By recorded start time. The order you add files in does not matter.</td></tr>
+        <tr><td>Records</td><td>Kept exactly as the device wrote them: position, heart rate, power, cadence, temperature.</td></tr>
+        <tr><td>Distance</td><td>Continues across each join, so the second part starts where the first ended.</td></tr>
+        <tr><td>Moving time</td><td>The sum of the parts.</td></tr>
+        <tr><td>Elapsed time</td><td>From the first start to the last finish, including the breaks between parts.</td></tr>
+        <tr><td>Laps</td><td>All existing laps are kept. A part with no laps becomes one lap.</td></tr>
+        <tr><td>Calories, ascent</td><td>Added up when every part has them, otherwise left blank.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      That table describes FIT files. GPX files are simpler: the track points are placed in time order in one track,
+      with elevation, heart rate, cadence, temperature and power carried over.
+    </p>
+
+    <h2>Limits</h2>
+    <ul>
+      <li>
+        The parts must not overlap in time. Two devices recording the same ride at once is a different job, blending
+        rather than joining, and this tool refuses it instead of producing a file with doubled data.
+      </li>
+      <li>FIT and GPX cannot be mixed in one join. <a href="/fit-to-gpx/">Convert</a> one set first so they match.</li>
+      <li>
+        Fields added by Connect IQ apps are kept from the first file only. Their definitions are tied to the file they
+        were recorded in.
+      </li>
+    </ul>
+
+    <h2>Before you upload the result</h2>
+    <p>
+      Platforms generally will not accept an activity that overlaps one you already have, so the separate pieces
+      usually have to be deleted first. Keep your downloaded originals until the joined activity looks right. The
+      full sequence is in <a href="/guides/combine-two-activities/">how to combine two activities</a>.
+    </p>
+  </div>
+</Layout>

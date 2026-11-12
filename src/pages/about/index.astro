@@ -1,0 +1,49 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { site } from '../../config';
+---
+
+<Layout title="About" description={`What ${site.name} is, who runs it, and how it is built and paid for.`}>
+  <article class="prose">
+    <h1>About</h1>
+    <p class="lede">A small set of tools for activity files, run by one independent developer.</p>
+
+    <h2>Why it exists</h2>
+    <p>
+      Fixing or joining an activity file usually means either buying desktop software for a one-off problem or
+      uploading the file, with your home location in it, to someone's server. Neither is necessary. A FIT file is
+      small and the work is simple enough for a browser to do on its own.
+    </p>
+
+    <h2>How it is built</h2>
+    <p>
+      The FIT reader and writer were written for this site from the published protocol description. The code was
+      written with the help of AI coding tools and is covered by automated tests, including checks against real
+      device recordings and against a separate open-source decoder. The guides were drafted with AI assistance and
+      their platform-specific steps were checked against the official help pages listed at the end of each one.
+    </p>
+    <p>
+      Nobody here claims to have tested every device or every platform. Where something has not been verified, the
+      page says so.
+    </p>
+
+    <h2>How it is paid for</h2>
+    <p>
+      The tools are free. The site costs almost nothing to run because your browser does the work. If that changes,
+      for instance if advertising or paid extras are added, this page and the <a href="/privacy/">privacy page</a>
+      will say exactly what changed.
+    </p>
+
+    {
+      site.contactEmail && (
+        <>
+          <h2>Contact</h2>
+          <p>
+            Found a file the tools get wrong? Write to <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+            Please describe the problem first instead of attaching the file.
+          </p>
+        </>
+      )
+    }
+  </article>
+</Layout>

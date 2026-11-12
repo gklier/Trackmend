@@ -1,0 +1,305 @@
+---
+import { site } from '../config';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Optional schema.org object for the page. */
+  schema?: Record<string, unknown>;
+}
+const { title, description, schema } = Astro.props;
+const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : null;
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/repair-fit-file/', label: 'Repair' },
+  { href: '/merge-fit-files/', label: 'Join' },
+  { href: '/fit-to-gpx/', label: 'FIT to GPX' },
+  { href: '/gpx-to-fit/', label: 'GPX to FIT' },
+  { href: '/guides/', label: 'Guides' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+    {
+      site.cfAnalyticsToken && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: site.cfAnalyticsToken })}
+        />
+      )
+    }
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="wordmark" href="/" aria-label={`${site.name} home`}>
+          <svg viewBox="0 0 34 16" width="34" height="16" aria-hidden="true">
+            <path d="M2 12c5-10 8 3 12-4s6-7 11-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="9 4"></path>
+            <circle cx="30" cy="3" r="2.5" fill="currentColor"></circle>
+          </svg>
+          <span>{site.name}</span>
+        </a>
+        <nav aria-label="Main">
+          <ul>
+            {
+              nav.map((n) => (
+                <li>
+                  <a href={n.href} aria-current={path.startsWith(n.href) ? 'page' : undefined}>
+                    {n.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p class="promise">Your files are read and rewritten inside this browser tab. Nothing is uploaded.</p>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/guides/">Guides</a></li>
+          {site.supportUrl && <li><a href={site.supportUrl} rel="noopener">Support this site</a></li>}
+        </ul>
+        <p class="fine">
+          Garmin, Strava and Wahoo are trademarks of their owners. This site is independent and not affiliated with
+          or endorsed by them.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #f6f4ee;
+    --surface: #fffdf8;
+    --ink: #1c1b18;
+    --muted: #5d5a52;
+    --line: #dcd7ca;
+    --accent: #b93c0a;
+    --accent-ink: #ffffff;
+    --ok: #1f6f43;
+    --warn: #8a5a00;
+    --bad: #a3231c;
+    --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+    --measure: 68ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15140f;
+      --surface: #1e1c16;
+      --ink: #ece8dc;
+      --muted: #a8a293;
+      --line: #38342a;
+      --accent: #f08a4b;
+      --accent-ink: #15140f;
+      --ok: #6fcf97;
+      --warn: #e2b55a;
+      --bad: #f0857d;
+    }
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1.0625rem/1.6 var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    flex: 1;
+    padding-block: 2.5rem 4rem;
+  }
+  .wrap {
+    width: min(100% - 2rem, 62rem);
+    margin-inline: auto;
+  }
+  a {
+    color: inherit;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 0.09em;
+    text-underline-offset: 0.18em;
+  }
+  a:hover {
+    color: var(--accent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .skip {
+    position: absolute;
+    left: -999px;
+    top: 0.5rem;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 0.5rem 0.75rem;
+    z-index: 10;
+  }
+  .skip:focus {
+    left: 0.5rem;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(2rem, 1.3rem + 3vw, 3.1rem);
+    margin: 0 0 1rem;
+  }
+  h2 {
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 1.7rem);
+    margin: 2.75rem 0 0.75rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+    margin: 1.75rem 0 0.4rem;
+  }
+  p,
+  ul,
+  ol {
+    margin: 0 0 1rem;
+  }
+  .lede {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 58ch;
+  }
+  .prose {
+    max-width: var(--measure);
+  }
+  .prose li {
+    margin-bottom: 0.4rem;
+  }
+  .prose a {
+    overflow-wrap: anywhere;
+  }
+  .prose table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+    display: block;
+    overflow-x: auto;
+  }
+  .prose th,
+  .prose td {
+    text-align: left;
+    padding: 0.5rem 0.75rem 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  .site-header {
+    border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding-block: 0.9rem;
+  }
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: 600 1.2rem var(--serif);
+    text-decoration: none;
+  }
+  .wordmark svg {
+    color: var(--accent);
+  }
+  .site-header ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.15rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.95rem;
+  }
+  .site-header nav a {
+    text-decoration: none;
+    padding-block: 0.35rem;
+    display: inline-block;
+    border-bottom: 2px solid transparent;
+  }
+  .site-header nav a[aria-current='page'] {
+    border-bottom-color: var(--accent);
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--line);
+    padding-block: 2rem 2.5rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .site-footer .promise {
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 1.05rem;
+  }
+  .site-footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    list-style: none;
+    padding: 0;
+  }
+  .site-footer .fine {
+    font-size: 0.82rem;
+    max-width: 70ch;
+    margin: 0;
+  }
+</style>

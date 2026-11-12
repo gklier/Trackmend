@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ToolPanel from '../../components/ToolPanel.astro';
+---
+
+<Layout
+  title="Convert FIT to GPX in your browser"
+  description="Convert a Garmin or Wahoo FIT activity to a GPX track with elevation, time, heart rate, cadence, temperature and power. No upload, no account."
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'FIT to GPX converter',
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (web browser)',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  }}
+>
+  <h1>Convert FIT to GPX</h1>
+  <p class="lede">
+    FIT is what the device records. GPX is what maps, route planners and most other software will open. Choose a FIT
+    activity and download it as a GPX track.
+  </p>
+
+  <ToolPanel tool="fit2gpx" />
+
+  <div class="prose">
+    <h2>What carries over</h2>
+    <table>
+      <thead><tr><th>Data</th><th>In the GPX</th></tr></thead>
+      <tbody>
+        <tr><td>Position, elevation, time</td><td>Yes, as standard GPX 1.1 track points.</td></tr>
+        <tr><td>Heart rate, cadence, temperature</td><td>Yes, using Garmin's TrackPointExtension, which most software reads.</td></tr>
+        <tr><td>Power</td><td>Yes, as a <code>power</code> extension element.</td></tr>
+        <tr><td>Laps, calories, device details, training metrics</td><td>No. GPX has no place for them.</td></tr>
+        <tr><td>Records without a GPS position</td><td>Left out. The tool tells you how many.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Because of that last row, an indoor workout cannot become a GPX file at all: it has no track. The tool says so
+      instead of writing an empty file.
+    </p>
+    <p>
+      A FIT file that is damaged will often still convert, since the tool reads up to the last good record. To get a
+      fixed FIT file instead, use <a href="/repair-fit-file/">repair</a>. Going the other way is
+      <a href="/gpx-to-fit/">GPX to FIT</a>.
+    </p>
+  </div>
+</Layout>

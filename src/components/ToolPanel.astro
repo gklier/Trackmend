@@ -1,0 +1,296 @@
+---
+interface Props {
+  tool: 'repair' | 'merge' | 'fit2gpx' | 'gpx2fit';
+}
+const { tool } = Astro.props;
+
+const copy = {
+  repair: { accept: '.fit', multiple: false, prompt: 'Choose a .fit file', hint: 'or drop it anywhere in this box' },
+  merge: {
+    accept: '.fit,.gpx',
+    multiple: true,
+    prompt: 'Choose two or more files',
+    hint: 'all .fit or all .gpx; drop them here in any order',
+  },
+  fit2gpx: { accept: '.fit', multiple: false, prompt: 'Choose a .fit file', hint: 'or drop it anywhere in this box' },
+  gpx2fit: { accept: '.gpx', multiple: false, prompt: 'Choose a .gpx file', hint: 'or drop it anywhere in this box' },
+}[tool];
+
+const sports = [
+  [1, 'Running'],
+  [2, 'Cycling'],
+  [11, 'Walking'],
+  [17, 'Hiking'],
+  [5, 'Swimming'],
+  [0, 'Other'],
+] as const;
+const inputId = `file-${tool}`;
+---
+
+<section class="tool" data-tool={tool} aria-label="File tool">
+  <div class="drop" data-drop>
+    <input id={inputId} class="visually-hidden" type="file" accept={copy.accept} multiple={copy.multiple} />
+    <label class="pick" for={inputId}>{copy.prompt}</label>
+    <p class="hint">{copy.hint}</p>
+  </div>
+
+  {
+    tool === 'gpx2fit' && (
+      <p class="field">
+        <label for="sport-gpx2fit">Activity type</label>
+        <select id="sport-gpx2fit" data-sport>
+          {sports.map(([v, n]) => (
+            <option value={v}>{n}</option>
+          ))}
+        </select>
+      </p>
+    )
+  }
+
+  {
+    tool === 'repair' && (
+      <p class="field" data-sport-row hidden>
+        <label for="sport-repair">The activity type was lost with the damaged part. Choose it:</label>
+        <select id="sport-repair" data-sport>
+          {sports.map(([v, n]) => (
+            <option value={v}>{n}</option>
+          ))}
+        </select>
+      </p>
+    )
+  }
+
+  {
+    tool === 'merge' && (
+      <div data-queue hidden>
+        <ol class="queue" data-queue-list />
+        <div class="actions">
+          <button type="button" class="primary" data-run>
+            Join files
+          </button>
+          <button type="button" class="quiet" data-clear>
+            Clear
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  <p class="error" role="alert" data-error hidden></p>
+  <div class="result" aria-live="polite" data-result hidden></div>
+  <noscript><p class="error">This tool needs JavaScript, because the work happens in your browser rather than on a server.</p></noscript>
+</section>
+
+<script>
+  import { initTools } from '../scripts/tool';
+  initTools();
+</script>
+
+<style is:global>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .tool {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: clamp(1rem, 3vw, 1.75rem);
+    margin-block: 1.75rem 2.5rem;
+    max-width: 46rem;
+  }
+  .drop {
+    border: 1.5px dashed color-mix(in srgb, var(--ink) 35%, transparent);
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+    transition: border-color 0.12s, background-color 0.12s;
+  }
+  .drop.over {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+  .pick,
+  .primary {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font: 600 1rem var(--sans);
+    padding: 0.7rem 1.25rem;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .pick:hover,
+  .primary:hover {
+    filter: brightness(1.08);
+    color: var(--accent-ink);
+  }
+  .drop input:focus-visible + .pick {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .hint {
+    margin: 0.75rem 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .quiet {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font: 500 0.95rem var(--sans);
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .field {
+    margin: 1.25rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+  }
+  .field label {
+    font-weight: 600;
+  }
+  select {
+    font: inherit;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .queue {
+    margin: 1.25rem 0 1rem;
+    padding: 0;
+    list-style: none;
+    counter-reset: q;
+  }
+  .queue li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.95rem;
+  }
+  .queue .name {
+    flex: 1;
+    overflow-wrap: anywhere;
+  }
+  .queue .size {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .queue button {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+    padding: 0.25rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .error {
+    margin: 1.25rem 0 0;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--bad);
+    background: color-mix(in srgb, var(--bad) 9%, transparent);
+  }
+  .result {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+  }
+  .result h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.3rem;
+  }
+  .result .status-ok {
+    color: var(--ok);
+  }
+  .result .status-warn {
+    color: var(--warn);
+  }
+  .result .source {
+    color: var(--muted);
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+  }
+  .findings {
+    margin: 1rem 0;
+    padding-left: 1.1rem;
+    font-size: 0.97rem;
+  }
+  .findings li {
+    margin-bottom: 0.3rem;
+  }
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 0.9rem 1.25rem;
+    margin: 1.25rem 0;
+  }
+  .readout dt {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+  }
+  .readout dd {
+    margin: 0;
+    font: 500 1.12rem var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .readout dd small {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .trace {
+    display: block;
+    width: 100%;
+    max-width: 26rem;
+    height: auto;
+    margin: 0.5rem 0 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
+  }
+  .trace path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .trace .start {
+    fill: var(--ink);
+  }
+  .trace .end {
+    fill: var(--bg);
+    stroke: var(--ink);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .trace-caption {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: -0.9rem 0 1.25rem;
+  }
+</style>

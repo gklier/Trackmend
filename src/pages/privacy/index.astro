@@ -1,0 +1,43 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { site } from '../../config';
+---
+
+<Layout title="Privacy" description={`What ${site.name} does and does not do with your files and your visit.`}>
+  <article class="prose">
+    <h1>Privacy</h1>
+    <p class="lede">Short version: your files stay on your device, and the site sets no cookies.</p>
+
+    <h2>Your files</h2>
+    <p>
+      Files you choose are read by JavaScript running in your browser tab. They are processed in memory and the
+      result is offered to you as a download. They are not sent to this site's server or to anyone else. The site
+      also sends a security policy to your browser that blocks its own pages from making connections to other
+      servers, apart from the analytics service described below when it is in use.
+    </p>
+    <p>Nothing is kept after you close or reload the tab. The site does not use cookies or browser storage.</p>
+
+    <h2>Your visit</h2>
+    <p>
+      The site is hosted on Cloudflare, which, like any web host, processes your IP address and browser details in
+      order to deliver pages and protect against abuse.
+    </p>
+    {
+      site.cfAnalyticsToken ? (
+        <p>
+          Page views are counted with Cloudflare Web Analytics. It does not use cookies, does not fingerprint you and
+          does not track you across sites. It records things like which page was viewed, the referring site, and
+          browser type.
+        </p>
+      ) : (
+        <p>The site does not currently run any analytics script.</p>
+      )
+    }
+
+    <h2>Advertising and affiliate links</h2>
+    <p>
+      There is none at present. If advertising or affiliate links are added, this page will be updated first, and
+      affiliate links will be labelled where they appear.
+    </p>
+  </article>
+</Layout>
