@@ -1,6 +1,8 @@
 # ROADMAP.md
 
-## Current phase: built and tested, waiting on deployment access
+## Current phase: live, awaiting owner verification of platform uploads
+
+Live at https://trackmend.pages.dev (Cloudflare Pages, deploys from `main`).
 
 ### Done (2026-11-12)
 - Tool and environment audit; delegation set up (AGENTS.md).
@@ -9,18 +11,21 @@
 - Site: home, four tool pages, three sourced guides, about, privacy, 404, sitemap, security headers.
 - Browser end-to-end suite. CI workflow file.
 
+### Done since first build
+- Repository `gklier/trackmend` connected; Cloudflare Pages project `trackmend` deployed.
+- `SITE_URL` set; sitemap and canonical links verified live.
+- Full browser suite (33 checks) passes against the live URL.
+
 ### Blocked on the owner (see OPERATIONS.md, "Owner actions")
-1. A GitHub repository to push to.
-2. Cloudflare Pages project connected to it.
-3. Decision on the name/domain.
+1. Upload one repaired and one joined file to Garmin Connect and Strava, and report the result.
+2. Decision on the final name and domain (currently a placeholder).
+3. Search Console and Bing Webmaster access, to submit the sitemap.
 
 ### Next, in order of expected revenue impact
-1. Deploy. Verify the live URL, headers and sitemap.
-2. Upload one repaired and one joined file to Garmin Connect and Strava (owner, 10 minutes) and record the result.
-   This is the biggest unverified claim.
-3. Search Console + Bing Webmaster: submit sitemap. Turn on Cloudflare Web Analytics.
-4. Listings where permitted: AlternativeTo (as an alternative to the tools named in OPPORTUNITIES.md).
-5. Wait for data. Then decide between ads and the paid batch pack (BUSINESS.md).
+1. Upload test (owner): see Blocked above. This is the biggest unverified claim.
+2. Search Console + Bing Webmaster: submit sitemap. Turn on Cloudflare Web Analytics.
+3. Listings where permitted: AlternativeTo (as an alternative to the tools named in OPPORTUNITIES.md).
+4. Wait for data. Then decide between ads and the paid batch pack (BUSINESS.md).
 
 ### Candidate improvements (do not build before traffic exists)
 - TCX read/write.

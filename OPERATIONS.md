@@ -4,16 +4,17 @@
 
 1. **Create an empty GitHub repository** (private is fine) and make it available to Claude Code sessions,
    or push this folder yourself. Do not reuse an employer-related repository.
-2. **Cloudflare Pages**: Workers & Pages -> Create -> Pages -> Connect to Git -> pick the repository.
+2. **Cloudflare Pages** (not Workers; this site relies on Pages' `_headers` file): Workers & Pages -> Create -> Pages -> Connect to Git -> pick `gklier/trackmend`.
    - Build command: `npm run build`
    - Output directory: `dist`
-   - Environment variables: `NODE_VERSION=22`, `SITE_URL=https://<project>.pages.dev` (or the custom domain)
+   - Environment variables: `NODE_VERSION=22`, `SITE_URL=https://<project>.pages.dev` (or the custom domain).
+     Changing a variable only takes effect on a new build: push a commit (or run a new deployment) after changing it.
 3. **Optional**: enable Web Analytics on the Pages project and set `PUBLIC_CF_ANALYTICS_TOKEN`;
    set `PUBLIC_CONTACT_EMAIL`. Use an address that is not your employer's.
 4. **Decide the name.** "Trackmend" is a placeholder and has not been checked against trademarks or domains.
    The name lives in `src/config.ts` and the GPX `creator` default in `src/lib/gpx.ts`.
 
-After step 2 every push to `main` deploys automatically. No secrets are stored in the repository.
+Current production: https://trackmend.pages.dev (project `trackmend`). After step 2 every push to `main` deploys automatically. No secrets are stored in the repository.
 
 ## Commands
 

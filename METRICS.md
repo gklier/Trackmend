@@ -1,11 +1,11 @@
 # METRICS.md
 
-Only verified numbers go here. As of 2026-11-12 the site is not deployed, so there are none.
+Only verified numbers go here. The site went live at https://trackmend.pages.dev on 2026-11-12. No traffic data exists yet.
 
 | Metric | Value | Source |
 |---|---|---|
-| Visitors | none (not deployed) | n/a |
-| Search impressions | none | n/a |
+| Visitors | not measured (analytics not enabled) | n/a |
+| Search impressions | not measured (Search Console not connected) | n/a |
 | Tool runs | not measured (no analytics configured) | n/a |
 | Revenue | $0.00 | n/a |
 
@@ -27,6 +27,8 @@ Only verified numbers go here. As of 2026-11-12 the site is not deployed, so the
 None run yet.
 
 ## Quality evidence (2026-11-12)
+
+- Live deployment: 33 of 33 browser checks pass against https://trackmend.pages.dev, including security headers, sitemap and canonical links.
 
 - 25 unit tests pass in CI configuration; 61 pass when the 9 real Garmin recordings are supplied via `SAMPLES_DIR`.
 - 33 browser checks pass (`npm run e2e`): every tool flow, error paths, keyboard reachability,
