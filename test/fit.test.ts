@@ -122,6 +122,7 @@ describe('repair', () => {
     const { output, report } = repairFit(broken);
     expect(report.issues.map((i) => i.code)).toEqual(['bad-crc']);
     expect((await oracle(output)).records).toHaveLength(900);
+    expect((await oracle(output)).sessions[0].sport).toBe('cycling');
   });
 
   it('stops at blank padding instead of reading it as data', async () => {
@@ -148,6 +149,64 @@ describe('repair', () => {
     const { output, report } = repairFit(shifted);
     expect(report.issues[0].code).toBe('leading-garbage');
     expect((await oracle(output)).records).toHaveLength(900);
+  });
+
+  it('skips a damaged block in the middle and keeps the records after it', async () => {
+    // Overwrite 10 bytes a third of the way in with bytes that cannot be a record header.
+    const broken = valid.slice();
+    // Start the damage on a record boundary, as a failed flash write would leave it.
+    const target = Math.floor(valid.length / 3);
+    const at = scanFit(valid).records.find((r) => r.offset >= target)!.offset;
+    broken.set([0x3e, 0x00, 0x99, 0x01, 0x3c, 0x00, 0x0b, 0x00, 0xff, 0xff], at);
+    const { output, report } = repairFit(broken);
+    const codes = report.issues.map((i) => i.code);
+    expect(codes).toContain('skipped-bytes');
+    const d = await oracle(output);
+    // The damage spans at most two records; everything else survives, in order.
+    expect(d.records.length).toBeGreaterThanOrEqual(897);
+    expect(d.sessions).toHaveLength(1);
+    expect(d.sessions[0].sport).toBe('cycling'); // the session at the end survived too
+    const times = d.records.map((r: any) => new Date(r.timestamp).getTime());
+    for (let i = 1; i < times.length; i++) expect(times[i]).toBeGreaterThan(times[i - 1]);
+    expect(report.bytesDropped).toBeGreaterThanOrEqual(10);
+  });
+
+  it('skips a blank flash block (0xFF) inserted mid-file', async () => {
+    const at = Math.floor(valid.length / 2);
+    const broken = new Uint8Array(valid.length + 512);
+    broken.set(valid.subarray(0, at));
+    broken.fill(0xff, at, at + 512);
+    broken.set(valid.subarray(at), at + 512);
+    const { output, report } = repairFit(broken);
+    const d = await oracle(output);
+    expect(d.records.length).toBeGreaterThanOrEqual(897);
+    expect(d.sessions[0].sport).toBe('cycling'); // the summary after the block survived
+    expect(report.issues.map((i) => i.code)).toEqual(['bad-crc', 'skipped-bytes']);
+  });
+
+  it('does not resynchronise onto random bytes', async () => {
+    const cut = valid.slice(0, Math.floor(valid.length * 0.5));
+    const noise = new Uint8Array(cut.length + 20000);
+    noise.set(cut);
+    let seed = 12345;
+    for (let i = cut.length; i < noise.length; i++) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      noise[i] = seed >> 16;
+    }
+    const { output, report } = repairFit(noise);
+    expect(report.issues.map((i) => i.code)).not.toContain('skipped-bytes');
+    const d = await oracle(output);
+    expect(d.records.length).toBeLessThan(470);
+  });
+
+  it('writes definitions a strict decoder accepts even when the device left a stray reserved byte', async () => {
+    const broken = valid.slice();
+    // The first definition message starts right after the 14-byte header; byte 1 of it is reserved.
+    expect(broken[14] & 0x40).toBe(0x40);
+    broken[15] = 0x7a;
+    await expect(oracle(broken)).rejects.toBeTruthy();
+    const d = await oracle(repairFit(broken).output);
+    expect(d.records).toHaveLength(900);
   });
 
   it('rejects files that are not FIT, and files with nothing left', () => {

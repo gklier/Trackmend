@@ -171,7 +171,7 @@ try {
   check((await page.locator('input[type=file]').evaluate((el) => el.labels?.[0]?.textContent?.trim())) === 'Choose a .fit file', 'a11y: file input has a label');
 
   // Every page: loads, one h1, title + description, no overflow at phone width, internal links resolve.
-  const paths = ['/', '/repair-fit-file/', '/merge-fit-files/', '/fit-to-gpx/', '/gpx-to-fit/', '/guides/', '/guides/export-original-activity-files/', '/guides/combine-two-activities/', '/guides/why-fit-files-get-corrupted/', '/about/', '/privacy/'];
+  const paths = ['/', '/repair-fit-file/', '/merge-fit-files/', '/fit-to-gpx/', '/gpx-to-fit/', '/guides/', '/guides/export-original-activity-files/', '/guides/combine-two-activities/', '/guides/why-fit-files-get-corrupted/', '/guides/fit-file-already-uploaded/', '/guides/fit-file-zero-bytes-or-empty/', '/guides/fit-file-wont-upload-to-strava/', '/about/', '/privacy/'];
   const links = new Set();
   await page.setViewportSize({ width: 360, height: 740 });
   for (const p of paths) {

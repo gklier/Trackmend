@@ -7,3 +7,4 @@ dist/
 !.env.example
 test-results/
 samples/
+*.local.test.ts

@@ -6,6 +6,7 @@ import {
   decodeFit,
   FitError,
   MESG,
+  recordBytes,
   scanFit,
   summarize,
   type DecodedFit,
@@ -55,7 +56,11 @@ export function repairFit(bytes: Uint8Array, opts: RepairOptions = {}): { output
     writeFileId(w, summary?.startTime ?? 0);
     added.push('file_id');
   }
-  w.raw(bytes.subarray(scan.dataStart, scan.dataEnd));
+  let kept = 0;
+  for (const rec of scan.records) {
+    w.raw(recordBytes(bytes, rec));
+    kept += rec.length;
+  }
 
   if (isActivity && summary) {
     const existing = decoded.sessions[0];
@@ -80,7 +85,7 @@ export function repairFit(bytes: Uint8Array, opts: RepairOptions = {}): { output
       alreadyValid: scan.issues.length === 0 && scan.crcOk === true && added.length === 0,
       issues: scan.issues,
       added,
-      bytesDropped: Math.max(0, bytes.length - scan.dataEnd - (scan.crcOk === null ? 0 : 2)),
+      bytesDropped: Math.max(0, bytes.length - scan.headerOffset - scan.headerSize - kept - (scan.crcOk === null ? 0 : 2)),
       messagesKept: dataMessages,
       summary,
       sport,
@@ -123,9 +128,10 @@ function emitPart(
         // Re-emit the definition without its developer-field section.
         const plain = src.slice(rec.offset, rec.offset + 6 + rec.def.fields.length * 3);
         plain[0] &= ~0x20;
+        plain[1] = 0;
         w.raw(plain);
       } else {
-        w.raw(src.subarray(rec.offset, rec.offset + rec.length));
+        w.raw(recordBytes(src, rec));
       }
       continue;
     }

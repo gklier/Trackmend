@@ -24,6 +24,9 @@ export const MESG = {
   developerDataId: 207,
 } as const;
 
+/** Messages whose timestamps the tools rely on; damage to these must not pass as data. */
+const ACTIVITY_MESSAGES = new Set<number>([MESG.session, MESG.lap, MESG.record, MESG.event, MESG.activity]);
+
 export class FitError extends Error {
   constructor(
     public code:
@@ -97,6 +100,7 @@ export type IssueCode =
   | 'missing-crc'
   | 'truncated-record'
   | 'corrupt-record'
+  | 'skipped-bytes'
   | 'trailing-data';
 
 export interface ScanIssue {
@@ -118,6 +122,8 @@ export interface ScanResult {
   issues: ScanIssue[];
   /** true/false when a CRC was present and checked, null when there was none to check. */
   crcOk: boolean | null;
+  /** Bytes inside the data section that were skipped as unreadable. */
+  bytesSkipped: number;
 }
 
 function isSignature(bytes: Uint8Array, at: number): boolean {
@@ -157,38 +163,49 @@ export function scanFit(bytes: Uint8Array): ScanResult {
   let limit: number;
   let crcOk: boolean | null = null;
   const declaredEnd = dataStart + declaredDataSize;
+  const crcMatches = (end: number): boolean =>
+    end > dataStart && end + 2 <= bytes.length && fitCrc(bytes, headerOffset, end) === view.getUint16(end, true);
 
-  if (declaredDataSize > 0 && declaredEnd <= bytes.length) {
+  if (declaredDataSize > 0 && declaredEnd <= bytes.length && crcMatches(declaredEnd)) {
+    // The header and checksum agree: the declared size is authoritative.
     limit = declaredEnd;
-    if (declaredEnd + 2 <= bytes.length) {
-      crcOk = fitCrc(bytes, headerOffset, declaredEnd) === view.getUint16(declaredEnd, true);
-      if (!crcOk) issues.push({ code: 'bad-crc', message: 'The file checksum does not match its contents.' });
-      if (declaredEnd + 2 < bytes.length) {
-        issues.push({
-          code: 'trailing-data',
-          message: `${bytes.length - declaredEnd - 2} extra bytes follow the end of the activity and were ignored.`,
-          offset: declaredEnd + 2,
-        });
-      }
-    } else {
-      issues.push({ code: 'missing-crc', message: 'The checksum at the end of the file is missing.' });
+    crcOk = true;
+    if (declaredEnd + 2 < bytes.length) {
+      issues.push({
+        code: 'trailing-data',
+        message: `${bytes.length - declaredEnd - 2} extra bytes follow the end of the activity and were ignored.`,
+        offset: declaredEnd + 2,
+      });
     }
   } else {
-    issues.push({
-      code: 'bad-data-size',
-      message:
-        declaredDataSize === 0
-          ? 'The header says the file holds no data. The recording was probably never finalised.'
-          : 'The header claims more data than the file contains. The file was cut short.',
-    });
-    limit = bytes.length;
-    // A file with a wrong size but an intact trailing checksum: keep the checksum out of the record stream.
-    if (bytes.length - 2 > dataStart) {
-      const tail = bytes.length - 2;
-      if (fitCrc(bytes, headerOffset, tail) === view.getUint16(tail, true)) {
-        limit = tail;
-        crcOk = true;
-      }
+    // The declared size cannot be trusted. Let the record stream decide where the data ends, after checking
+    // whether the file at least carries a valid checksum over everything it holds.
+    if (declaredDataSize === 0) {
+      issues.push({
+        code: 'bad-data-size',
+        message: 'The header says the file holds no data. The recording was probably never finalised.',
+      });
+    } else if (declaredEnd > bytes.length) {
+      issues.push({
+        code: 'bad-data-size',
+        message: 'The header claims more data than the file contains. The file was cut short.',
+      });
+    } else if (declaredEnd + 2 > bytes.length) {
+      issues.push({ code: 'missing-crc', message: 'The checksum at the end of the file is missing.' });
+    } else if (crcMatches(bytes.length - 2)) {
+      issues.push({
+        code: 'bad-data-size',
+        message: 'The header gives the wrong data size for the file, although the file itself is complete.',
+      });
+    } else {
+      issues.push({ code: 'bad-crc', message: 'The file checksum does not match its contents.' });
+    }
+    if (crcMatches(bytes.length - 2)) {
+      limit = bytes.length - 2;
+      crcOk = true;
+    } else {
+      limit = bytes.length;
+      crcOk = declaredDataSize > 0 && declaredEnd + 2 <= bytes.length ? false : null;
     }
   }
 
@@ -196,116 +213,160 @@ export function scanFit(bytes: Uint8Array): ScanResult {
   const defs = new Map<number, MesgDef>();
   let p = dataStart;
   let fileIds = 0;
+  let lastTs: number | null = null;
+  let bytesSkipped = 0;
   let stop: ScanIssue | null = null;
 
-  const truncated = (at: number): ScanIssue => ({
-    code: 'truncated-record',
-    message: 'The file ends in the middle of a record.',
-    offset: at,
-  });
-  const corrupt = (at: number, why: string): ScanIssue => ({
-    code: 'corrupt-record',
-    message: `Unreadable data at byte ${at} (${why}).`,
-    offset: at,
-  });
+  type Parsed = { rec: FitRecord; next: number; ts: number | null } | { fail: 'truncated' | 'corrupt'; why: string };
 
-  while (p < limit) {
-    const h = bytes[p];
+  // Below 0x10000000 the protocol defines the value as seconds since power-on, which devices write before a GPS
+  // fix; above that it is a real time. Anything past about 2075 is damage, not a time.
+  const saneTs = (t: number): boolean => t < 0xa0000000;
+
+  /** Parse one message at `at` against `table`. Pure: does not touch scanner state. */
+  const parseAt = (at: number, table: Map<number, MesgDef>, strict = false): Parsed => {
+    const h = bytes[at];
     const compressed = (h & 0x80) !== 0;
-
     if (!compressed && (h & 0x40) !== 0) {
-      // Definition message.
       const hasDev = (h & 0x20) !== 0;
       const local = h & 0x0f;
-      if (p + 6 > limit) {
-        stop = truncated(p);
-        break;
-      }
-      const arch = bytes[p + 2];
-      if (arch > 1) {
-        stop = corrupt(p, 'invalid byte order flag');
-        break;
-      }
+      if (at + 6 > limit) return { fail: 'truncated', why: '' };
+      const arch = bytes[at + 2];
+      if (arch > 1) return { fail: 'corrupt', why: 'invalid byte order flag' };
       const littleEndian = arch === 0;
-      const global = view.getUint16(p + 3, littleEndian);
-      const n = bytes[p + 5];
-      let q = p + 6;
-      if (q + n * 3 > limit) {
-        stop = truncated(p);
-        break;
-      }
+      const global = view.getUint16(at + 3, littleEndian);
+      const n = bytes[at + 5];
+      let q = at + 6;
+      if (q + n * 3 > limit) return { fail: 'truncated', why: '' };
       const fields: FieldDef[] = [];
       let offset = 0;
-      let bad = false;
       for (let i = 0; i < n; i++) {
         const size = bytes[q + 1];
         const baseType = bytes[q + 2];
         if (size === 0 || (baseType & 0x1f) > 16 || (baseType & 0x60) !== 0) {
-          bad = true;
-          break;
+          return { fail: 'corrupt', why: 'invalid field definition' };
         }
         fields.push({ num: bytes[q], size, baseType, offset });
         offset += size;
         q += 3;
       }
-      if (bad) {
-        stop = corrupt(p, 'invalid field definition');
-        break;
-      }
       let devSize = 0;
       if (hasDev) {
-        if (q + 1 > limit) {
-          stop = truncated(p);
-          break;
-        }
+        if (q + 1 > limit) return { fail: 'truncated', why: '' };
         const nd = bytes[q];
         q += 1;
-        if (q + nd * 3 > limit) {
-          stop = truncated(p);
-          break;
-        }
+        if (q + nd * 3 > limit) return { fail: 'truncated', why: '' };
         for (let i = 0; i < nd; i++) {
           devSize += bytes[q + 1];
           q += 3;
         }
       }
       const def: MesgDef = { local, global, littleEndian, fields, fieldsSize: offset, devSize };
-      defs.set(local, def);
-      records.push({ kind: 'definition', offset: p, length: q - p, local, global, def });
+      return { rec: { kind: 'definition', offset: at, length: q - at, local, global, def }, next: q, ts: null };
+    }
+    if (!compressed && (h & 0x30) !== 0) return { fail: 'corrupt', why: 'reserved header bits set' };
+    const local = compressed ? (h >> 5) & 0x03 : h & 0x0f;
+    const def = table.get(local);
+    if (!def) return { fail: 'corrupt', why: 'data without a matching definition' };
+    const length = 1 + def.fieldsSize + def.devSize;
+    if (at + length > limit) return { fail: 'truncated', why: '' };
+    let ts: number | null = null;
+    const tsField = def.fields.find((f) => f.num === 253 && f.size === 4);
+    if (tsField) {
+      const v = view.getUint32(at + 1 + tsField.offset, def.littleEndian);
+      if (v === 0) return { fail: 'corrupt', why: 'blank padding where a record should be' };
+      if (v !== 0xffffffff) {
+        // Devices write odd timestamps in some internal messages; platforms accept them. Only the messages an
+        // activity is built from must carry a real time.
+        if (!saneTs(v) && (strict || ACTIVITY_MESSAGES.has(def.global))) {
+          return { fail: 'corrupt', why: 'impossible timestamp' };
+        }
+        ts = saneTs(v) ? v : null;
+      }
+    }
+    const rec: FitRecord = { kind: 'data', offset: at, length, local, global: def.global, def };
+    if (compressed) rec.compressedTime = h & 0x1f;
+    return { rec, next: at + length, ts };
+  };
+
+  const plausible = (t: number): boolean =>
+    t >= 0x10000000 && saneTs(t) && (lastTs === null || (t >= lastTs - 3600 && t <= lastTs + 7 * 86400));
+
+  /**
+   * After unreadable bytes, look for the point where the record stream becomes readable again: an offset from which
+   * several consecutive messages parse cleanly with timestamps that continue from where the recording left off.
+   */
+  const resync = (from: number): number | null => {
+    const RUN = 6;
+    for (let q = from + 1; q < limit; q++) {
+      const h = bytes[q];
+      if (h === 0x00 || h === 0xff) continue;
+      const trial = new Map(defs);
+      let at = q;
+      let ok = 0;
+      let seenTs = 0;
+      let prevTs: number | null = lastTs;
+      while (ok < RUN) {
+        const r = parseAt(at, trial, true);
+        if ('fail' in r) break;
+        if (r.rec.kind === 'definition') trial.set(r.rec.local, r.rec.def);
+        else if (r.rec.global === MESG.fileId) break; // a file header never appears mid-recording
+        if (r.ts !== null) {
+          if (!plausible(r.ts) || (prevTs !== null && r.ts < prevTs - 60)) break;
+          prevTs = r.ts;
+          seenTs++;
+        }
+        ok++;
+        at = r.next;
+        if (at >= limit) break;
+      }
+      if (ok >= RUN && seenTs >= 2) return q;
+      if (ok > 0 && at >= limit && seenTs >= 2) return q; // short but clean tail
+    }
+    return null;
+  };
+
+  const truncated = (at: number): ScanIssue => ({
+    code: 'truncated-record',
+    message: 'The file ends in the middle of a record.',
+    offset: at,
+  });
+
+  while (p < limit) {
+    const r = parseAt(p, defs);
+    if ('fail' in r) {
+      if (limit - p <= 2) break; // the file's (stale) checksum, not a record
+      if (r.fail === 'truncated') {
+        stop = truncated(p);
+        break;
+      }
+      const q = resync(p);
+      if (q === null) {
+        stop = { code: 'corrupt-record', message: `Unreadable data at byte ${p} (${r.why}).`, offset: p };
+        break;
+      }
+      bytesSkipped += q - p;
+      issues.push({
+        code: 'skipped-bytes',
+        message: `${q - p} unreadable bytes at byte ${p} were skipped; the recording picks up again after them.`,
+        offset: p,
+      });
       p = q;
       continue;
     }
-
-    // Data message, normal or compressed-timestamp header.
-    if (!compressed && (h & 0x30) !== 0) {
-      stop = corrupt(p, 'reserved header bits set');
-      break;
+    const rec = r.rec;
+    if (rec.kind === 'definition') {
+      defs.set(rec.local, rec.def);
+    } else {
+      if (rec.global === MESG.fileId && ++fileIds > 1) {
+        // Either a second, chained FIT file or zero padding that happens to parse as local type 0.
+        stop = { code: 'trailing-data', message: 'Data after the first activity was ignored.', offset: p };
+        break;
+      }
+      if (r.ts !== null && r.ts >= 0x10000000) lastTs = r.ts;
     }
-    const local = compressed ? (h >> 5) & 0x03 : h & 0x0f;
-    const def = defs.get(local);
-    if (!def) {
-      stop = corrupt(p, 'data without a matching definition');
-      break;
-    }
-    const length = 1 + def.fieldsSize + def.devSize;
-    if (p + length > limit) {
-      stop = truncated(p);
-      break;
-    }
-    if (def.global === MESG.fileId && ++fileIds > 1) {
-      // Either a second, chained FIT file or zero padding that happens to parse as local type 0.
-      stop = { code: 'trailing-data', message: 'Data after the first activity was ignored.', offset: p };
-      break;
-    }
-    const tsField = def.fields.find((f) => f.num === 253 && f.size === 4);
-    if (tsField && view.getUint32(p + 1 + tsField.offset, def.littleEndian) === 0) {
-      stop = corrupt(p, 'blank padding where a record should be');
-      break;
-    }
-    const rec: FitRecord = { kind: 'data', offset: p, length, local, global: def.global, def };
-    if (compressed) rec.compressedTime = h & 0x1f;
     records.push(rec);
-    p += length;
+    p = r.next;
   }
 
   if (stop) {
@@ -313,6 +374,7 @@ export function scanFit(bytes: Uint8Array): ScanResult {
     // Whatever we said about the checksum no longer describes the part we can use.
     if (crcOk) crcOk = false;
   }
+  if (bytesSkipped > 0 && crcOk) crcOk = false;
 
   return {
     headerOffset,
@@ -325,7 +387,18 @@ export function scanFit(bytes: Uint8Array): ScanResult {
     records,
     issues,
     crcOk,
+    bytesSkipped,
   };
+}
+
+/**
+ * Copy of one record's bytes, suitable for writing into a new file. Definition messages get a zero reserved byte,
+ * which is what every encoder writes and what strict decoders require; nothing else is changed.
+ */
+export function recordBytes(bytes: Uint8Array, rec: FitRecord): Uint8Array {
+  const copy = bytes.slice(rec.offset, rec.offset + rec.length);
+  if (rec.kind === 'definition') copy[1] = 0;
+  return copy;
 }
 
 /** Read an integer field from a data message. Returns null when absent or set to the type's "invalid" value. */

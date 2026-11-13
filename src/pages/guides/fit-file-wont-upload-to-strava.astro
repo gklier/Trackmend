@@ -1,0 +1,41 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="FIT file won't upload to Strava" description="The usual reasons Strava rejects a FIT file, in order, and a short diagnostic routine using repair and GPX conversion.">
+  <article class="prose">
+    <h1>FIT file won't upload to Strava</h1>
+    <p class="lede">When Strava says a file could not be processed, is not valid or is malformed, the file is usually damaged. A few other causes are quick to rule out first or after.</p>
+
+    <h2>The main causes, in order</h2>
+    <ol>
+      <li><strong>The file is damaged.</strong> The device stopped before it finished writing, so the header size, the checksum or the summary messages are wrong or missing. See <a href="/guides/why-fit-files-get-corrupted/">why FIT files get corrupted</a>.</li>
+      <li><strong>The activity is already on your account.</strong> The same file or an overlapping one is already there. See <a href="/guides/fit-file-already-uploaded/">FIT file already uploaded</a>.</li>
+      <li><strong>The file is not an activity.</strong> Garmin devices also produce other FIT file types, such as courses and workouts, and settings or other device files. Strava's help says a file must contain actual workout data, so a file with no activity in it is not accepted. Check that you picked the file from the activity folder.</li>
+      <li><strong>The file is too large.</strong> Strava's help says files must be 25MB or smaller. Very few single activities come near that, so check this after the other causes.</li>
+    </ol>
+    <p>Strava also rejects some GPS-only files that have no timestamps, with a different message about time information missing. That applies mainly to GPX files, not to FIT files from a device.</p>
+
+    <h2>A short diagnostic order</h2>
+    <ol>
+      <li>Check the size of the file and the folder it came from. If it is over 25MB or is not from the activity folder, that is your answer.</li>
+      <li>Check whether the activity is already on Strava. If it is, decide whether to replace it.</li>
+      <li>Open <a href="/repair-fit-file/">the FIT repair tool</a> and add the file. Everything runs in your browser, files are never uploaded and no account is needed. If the tool reports that the file is not damaged, its structure is fine and the cause is something else on the list above, not corruption.</li>
+      <li>If the tool repairs the file, download the result and upload that. If Strava then reports a duplicate, delete the original activity first and keep a local copy of the file.</li>
+      <li>If Strava still refuses the file, convert it with <a href="/fit-to-gpx/">the FIT to GPX tool</a> and upload the GPX. A GPX carries the track, times and heart rate but fewer device-specific fields, so some detail may not carry over.</li>
+    </ol>
+
+    <h2>What the repair tool does</h2>
+    <p>It keeps every readable record, skips damaged bytes in the middle of a file and continues reading after them, and rebuilds missing lap, session and activity summaries. It writes a correct header size and checksum. It refuses a file with no readable records, and it cannot recover data the device never wrote. The output passes an independent open-source FIT decoder's strict validation.</p>
+    <p>We have tested repair on corrupt files that users posted to Garmin's forum, and the results matched the fixed files other users later uploaded successfully, in record count and distance. We have not uploaded to Garmin Connect or Strava ourselves, so Strava could still decline a repaired file for its own reasons.</p>
+
+    <h2>Keep your originals</h2>
+    <p>Copy the original file somewhere safe before you repair, convert or delete anything. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>.</p>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://support.strava.com/en-us/articles/15402066-how-do-i-get-my-activities-to-strava" rel="noopener">https://support.strava.com/en-us/articles/15402066-how-do-i-get-my-activities-to-strava</a> (accepted formats are GPX, TCX and FIT; files must be 25MB or smaller; a file must contain actual workout data)</li>
+      <li><a href="https://support.strava.com/hc/en-us/articles/216917947-Uploading-Files-to-Strava" rel="noopener">https://support.strava.com/hc/en-us/articles/216917947-Uploading-Files-to-Strava</a> (files with no timestamps are rejected with a time information error)</li>
+      <li><a href="https://support.strava.com/en-us/articles/15401839-merge-or-combine-activities" rel="noopener">https://support.strava.com/en-us/articles/15401839-merge-or-combine-activities</a> (delete existing activities before uploading a merged file)</li>
+    </ul>
+  </article>
+</Layout>

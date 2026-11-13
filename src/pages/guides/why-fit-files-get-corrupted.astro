@@ -27,7 +27,7 @@ import Layout from '../../layouts/Layout.astro';
     <table>
       <thead><tr><th>Recoverable</th><th>Not recoverable</th></tr></thead>
       <tbody>
-        <tr><td>Every record written before the point of damage</td><td>Anything after the first unreadable record</td></tr>
+        <tr><td>Every readable record, before and after a damaged block</td><td>Records inside the damaged block itself</td></tr>
         <tr><td>Totals, rebuilt from those records</td><td>Data the device never wrote</td></tr>
         <tr><td>A valid header size and checksum</td><td>The original summary values, if they were lost</td></tr>
       </tbody>
@@ -38,7 +38,7 @@ import Layout from '../../layouts/Layout.astro';
     <ol>
       <li>Get the original file from the device or platform. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>.</li>
       <li>Open <a href="/repair-fit-file/">the FIT repair tool</a> and add the file. Everything runs in your browser, files are never uploaded and no account is needed.</li>
-      <li>The tool finds the header and reads records until the first unreadable one. It keeps everything before that.</li>
+      <li>The tool finds the header and reads every record it can. When it meets unreadable bytes it skips them and continues where the recording becomes readable again.</li>
       <li>It rebuilds the missing lap, session and activity messages from the recovered records, using start time, elapsed time, distance, and average and maximum heart rate where available.</li>
       <li>It writes a correct header size and checksum. Download the result.</li>
     </ol>

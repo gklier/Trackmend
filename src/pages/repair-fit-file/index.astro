@@ -44,6 +44,13 @@ import ToolPanel from '../../components/ToolPanel.astro';
           <td>Recalculates it.</td>
         </tr>
         <tr>
+          <td>A block in the middle of the file is unreadable: overwritten, blank, or filled with leftover data.</td>
+          <td>
+            Skips the damaged bytes and picks the recording up where it becomes readable again, so the part after
+            the damage is kept too.
+          </td>
+        </tr>
+        <tr>
           <td>The end of the file is blank padding or leftover data from the device's storage.</td>
           <td>Stops at the last real record and leaves the rest out.</td>
         </tr>
@@ -56,10 +63,10 @@ import ToolPanel from '../../components/ToolPanel.astro';
 
     <h2>What it cannot fix</h2>
     <p>
-      The tool keeps everything up to the first unreadable record and nothing after it. If the damage is in the
-      middle of the file, the part after the damage is lost even if it looks intact, because a FIT file can only be
-      read in order: each record depends on definitions that came before it. And it cannot bring back time the device
-      never wrote to storage.
+      It cannot bring back time the device never wrote to storage. Records inside a damaged block are gone; the tool
+      tells you how many bytes it had to skip. Values that were overwritten with other plausible-looking numbers,
+      rather than with garbage, cannot be told apart from real data, so a repaired file is worth a glance before you
+      upload it.
     </p>
     <p>
       The rebuilt summary covers distance, elapsed and moving time, average and maximum heart rate, average cadence

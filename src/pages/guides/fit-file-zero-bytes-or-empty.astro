@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="FIT file shows 0 bytes or is empty" description="What a 0 byte, tiny or empty-header FIT file means, what can be recovered, and how the repair tool treats each case.">
+  <article class="prose">
+    <h1>FIT file shows 0 bytes or is empty</h1>
+    <p class="lede">An empty-looking FIT file can mean two different things: the device never wrote the data, or it wrote the data and never finished the file. Only the second can be fixed.</p>
+
+    <h2>Three cases</h2>
+    <table>
+      <thead><tr><th>What you see</th><th>What it means</th><th>Recoverable</th></tr></thead>
+      <tbody>
+        <tr><td>0 bytes</td><td>The file was created but nothing was written to it.</td><td>No</td></tr>
+        <tr><td>A tiny file, under about 100 bytes</td><td>Only the start of the file exists. It holds no records.</td><td>No</td></tr>
+        <tr><td>A large file, but the header says the data size is zero</td><td>The records were written, but the header was never updated at the end.</td><td>Usually yes, in full</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Never written</h2>
+    <p>A FIT file starts with a header and then a stream of records. A file of 0 bytes has neither. A file of under about 100 bytes has at most the beginning of a header and a definition or two, with no position, time or heart rate samples. There is nothing in it for any tool to read, and no software can bring back data the device never wrote.</p>
+    <p>If you see this, look for other copies before giving up:</p>
+    <ul>
+      <li>The activity on Garmin Connect or Strava, which may have arrived by another route. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>.</li>
+      <li>The device's own storage, in case the file was copied part way and the original is intact.</li>
+      <li>A second device or app that recorded the same activity.</li>
+    </ul>
+
+    <h2>Never finalised</h2>
+    <p>The header includes a field for the size of the data that follows. While you record, the device is writing records at the end of the file. The header size is normally filled in when the activity is saved. If the battery dies or the device crashes first, the file can be many kilobytes or megabytes of records under a header that still says the data size is zero. Software that trusts the header reads nothing and reports the file as empty. The records are still there.</p>
+    <p>Because the device did not finish, the lap, session and activity summaries and the final checksum are usually missing too. See <a href="/guides/why-fit-files-get-corrupted/">why FIT files get corrupted</a> for how those parts fit together.</p>
+
+    <h2>How the repair tool handles each case</h2>
+    <ol>
+      <li>Open <a href="/repair-fit-file/">the FIT repair tool</a> and add the file. Everything runs in your browser, files are never uploaded and no account is needed.</li>
+      <li>For a large file with a zero data size, the tool does not rely on the header. It reads the records it finds, keeps every readable one, rebuilds the missing lap, session and activity summaries, and writes a correct header size and checksum.</li>
+      <li>For a 0 byte or tiny file, the tool refuses it, because there are no readable records to keep. That is the correct result, not a fault in the tool.</li>
+    </ol>
+    <p>If the file is damaged in the middle as well, the tool skips the damaged bytes and carries on reading after them.</p>
+    <p>The repair output passes an independent open-source FIT decoder's strict validation. We have not uploaded to Garmin Connect or Strava ourselves, so a platform could still decline a file for its own reasons. If it reports a duplicate, see <a href="/guides/fit-file-already-uploaded/">FIT file already uploaded</a>.</p>
+
+    <h2>A quick check of file size</h2>
+    <p>Look at the size in your file manager before you do anything else. A zero or near-zero size means stop and look for another copy. A file of a normal size for the length of your activity is worth running through the repair tool.</p>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://developer.garmin.com/fit/file-types/" rel="noopener">https://developer.garmin.com/fit/file-types/</a> (opened; it lists the FIT file types but did not show header details in the text we could read)</li>
+      <li>The header and data size behaviour described above is how this site's own FIT reader, written from the published protocol, handles files: a 12 or 14 byte header holding a 4 byte data size, followed by records. The figure of about 100 bytes is approximate because the smallest possible activity record stream is a few definition messages plus one data record.</li>
+    </ul>
+  </article>
+</Layout>

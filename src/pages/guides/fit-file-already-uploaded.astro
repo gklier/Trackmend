@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="FIT file already uploaded: what to do" description="Why Garmin Connect and Strava report a duplicate activity, and how to upload a repaired or joined file without being blocked.">
+  <article class="prose">
+    <h1>FIT file already uploaded: what to do</h1>
+    <p class="lede">A message that a file has already been uploaded, or that an activity is a duplicate, means the platform believes it already holds that activity. The fix is usually to remove the existing copy first.</p>
+
+    <h2>What triggers the message</h2>
+    <ul>
+      <li><strong>The same file twice.</strong> You uploaded a file that is already on your account, or your device synced it and you then added it by hand.</li>
+      <li><strong>An overlapping time.</strong> A new file covers the same period as an activity that is already there. Two devices recording the same ride are a common cause, and so is a second copy that came in through a connected app.</li>
+    </ul>
+    <p>The exact rule each platform uses is not published in the help pages we could open, so treat the two causes above as the usual pattern rather than a complete specification. The message wording also differs between Garmin Connect and Strava and between the web and the apps.</p>
+
+    <h2>What to do</h2>
+    <ol>
+      <li>Check whether the activity is already on your account. If it is, and it looks complete, you may not need to upload anything.</li>
+      <li>If you want to replace it, save a copy of the original file first. See <a href="/guides/export-original-activity-files/">how to export original activity files</a>. Deleting an activity on a platform is permanent, so keep local copies of every file you may need.</li>
+      <li>Delete the existing activity on the platform.</li>
+      <li>Upload the new file.</li>
+    </ol>
+    <p>If you delete and the upload is still refused, check for a second copy of the same activity, for example one that arrived through another connected service, and delete that as well.</p>
+
+    <h2>Repaired and joined files overlap the original</h2>
+    <p>A file produced by <a href="/repair-fit-file/">the FIT repair tool</a> covers the same time as the damaged original, so a platform that already holds the original can treat it as a duplicate. A file made with <a href="/merge-fit-files/">the FIT merge tool</a> covers the time of the parts it was built from, so it overlaps each of them. That overlap is expected. It is the reason the order matters.</p>
+    <ol>
+      <li>Keep the original files on your computer.</li>
+      <li>Repair or merge them. Everything runs in your browser, files are never uploaded and no account is needed.</li>
+      <li>Delete the original activity or activities on the platform.</li>
+      <li>Upload the repaired or joined file.</li>
+    </ol>
+    <p>Strava's own help article on combining activities gives the same instruction: you need to delete the existing activities on Strava before uploading the merged file, and you lose the kudos and comments on the deleted activities. See also <a href="/guides/combine-two-activities/">how to combine two activities into one</a>.</p>
+    <p>We have not uploaded to Garmin Connect or Strava ourselves. This order follows Strava's published instruction for merged files, so a platform could still behave differently for your account.</p>
+
+    <h2>Things to avoid</h2>
+    <ul>
+      <li>Do not delete the only copy of an activity before you have a file saved on your computer.</li>
+      <li>Do not change the start time of a file to get past the check. The activity would then show the wrong time and may collide with another one.</li>
+    </ul>
+
+    <h2>Sources</h2>
+    <ul>
+      <li><a href="https://support.strava.com/en-us/articles/15401839-merge-or-combine-activities" rel="noopener">https://support.strava.com/en-us/articles/15401839-merge-or-combine-activities</a> (delete existing activities before uploading a merged file; kudos and comments are lost)</li>
+      <li>Garmin's help pages on duplicate uploads could not be opened from our environment, so the Garmin Connect behaviour above is described in general terms only.</li>
+    </ul>
+  </article>
+</Layout>
