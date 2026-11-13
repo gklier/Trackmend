@@ -1,0 +1,98 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { site } from '../../config';
+const paid = Boolean(site.lsProductId && site.lsCheckoutUrl);
+const sports = [[1, 'Running'], [2, 'Cycling'], [11, 'Walking'], [17, 'Hiking'], [5, 'Swimming'], [0, 'Other']] as const;
+---
+
+<Layout
+  title="Batch: repair or convert many activity files at once"
+  description="Process a whole folder of FIT or GPX files in one go, in your browser, and download the results as a zip. Free for three files per run."
+>
+  <h1>Process many files at once</h1>
+  <p class="lede">
+    For a whole season's export or a device full of recordings. Choose the operation, drop the files, and download one
+    zip. Free for up to three files per run{paid ? '; a one-time licence removes the limit.' : '.'}
+  </p>
+
+  <section class="tool" data-batch aria-label="Batch tool">
+    <p class="field">
+      <label for="batch-op">Operation</label>
+      <select id="batch-op" data-op>
+        <option value="repair">Repair FIT files</option>
+        <option value="fit2gpx">Convert FIT to GPX</option>
+        <option value="gpx2fit">Convert GPX to FIT</option>
+      </select>
+      <label for="batch-sport">Activity type if the file does not say</label>
+      <select id="batch-sport" data-sport>
+        {sports.map(([v, n]) => <option value={v}>{n}</option>)}
+      </select>
+    </p>
+    <div class="drop" data-drop>
+      <input id="batch-files" class="visually-hidden" type="file" accept=".fit,.gpx" multiple />
+      <label class="pick" for="batch-files">Choose files</label>
+      <p class="hint">or drop a selection here</p>
+    </div>
+    <ol class="queue" data-list></ol>
+    <p class="error" data-limit hidden>
+      {paid
+        ? `More than three files in one run needs a licence. Enter yours below, or remove files to continue for free.`
+        : `This free tool handles up to three files per run. Remove files to continue, or run it more than once.`}
+    </p>
+    <div class="actions">
+      <button type="button" class="primary" data-run disabled>Process files</button>
+      <button type="button" class="quiet" data-clear>Clear</button>
+    </div>
+    <p class="status" data-status aria-live="polite" hidden></p>
+    <div class="result" data-result aria-live="polite" hidden></div>
+
+    {paid && (
+      <div class="licence">
+        <h2>Licence</h2>
+        <p>
+          A one-time purchase, no subscription. It unlocks unlimited files per run in any browser you enter it in.
+          <a href={site.lsCheckoutUrl} rel="noopener">Buy a licence</a>.
+        </p>
+        <form data-key-form class="key-form">
+          <label for="batch-key">Licence key</label>
+          <input id="batch-key" data-key type="text" autocomplete="off" spellcheck="false" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" />
+          <button type="submit" class="quiet">Apply</button>
+          <button type="button" class="quiet" data-key-forget hidden>Forget key</button>
+        </form>
+        <p class="key-status" data-key-status hidden></p>
+        <p class="fine">The key is checked with the payment provider and remembered in this browser only. Files are never sent anywhere.</p>
+      </div>
+    )}
+    <noscript><p class="error">This tool needs JavaScript, because the work happens in your browser rather than on a server.</p></noscript>
+  </section>
+
+  <div class="prose">
+    <h2>What each operation does</h2>
+    <ul>
+      <li><strong>Repair FIT files</strong> runs the same repair as the <a href="/repair-fit-file/">single-file tool</a> on each file. Files that are not damaged are copied through unchanged, so you can point it at a whole folder.</li>
+      <li><strong>FIT to GPX</strong> and <strong>GPX to FIT</strong> convert each file as the single-file tools do. Files that cannot be converted, such as indoor workouts with no track, are listed with the reason and left out of the zip.</li>
+    </ul>
+    <p>Output file names keep the original name, with <code>-repaired</code> added for repaired files. Nothing is uploaded; the zip is assembled in your browser.</p>
+  </div>
+</Layout>
+
+<script>
+  import { initBatch } from '../../scripts/batch';
+  initBatch();
+</script>
+
+<style is:global>
+  .batch-table { border-collapse: collapse; width: 100%; font-size: 0.93rem; margin: 1rem 0; }
+  .batch-table th, .batch-table td { text-align: left; padding: 0.45rem 0.75rem 0.45rem 0; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+  .batch-table tr.bad td:last-child { color: var(--bad); }
+  .status { margin: 1rem 0 0; color: var(--muted); font-family: var(--mono); font-size: 0.9rem; }
+  .licence { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+  .licence h2 { margin-top: 0; font-size: 1.3rem; }
+  .key-form { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; }
+  .key-form label { font-weight: 600; }
+  .key-form input { font: 0.95rem var(--mono); padding: 0.5rem 0.65rem; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); min-width: 0; flex: 1 1 18rem; }
+  .key-status { margin: 0.75rem 0 0; }
+  .key-status.ok { color: var(--ok); }
+  .key-status.bad { color: var(--bad); }
+  .licence .fine { font-size: 0.85rem; color: var(--muted); }
+</style>

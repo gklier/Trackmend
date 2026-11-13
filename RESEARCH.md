@@ -1,4 +1,4 @@
-# OPPORTUNITIES.md
+# RESEARCH.md
 
 Research run: 2026-11-12. Three delegated research briefs plus orchestrator verification of the finalists.
 

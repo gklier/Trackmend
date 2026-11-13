@@ -3,7 +3,7 @@
  * Builds nothing itself: run `npm run build` first. Starts `astro preview`, drives every tool with real files,
  * and fails on console errors, horizontal overflow, or any request that leaves the site's own origin.
  */
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -160,6 +160,19 @@ try {
   const gpxText = readFileSync(outGpx, 'utf8');
   check((gpxText.match(/<trkpt /g) || []).length === 900 && gpxText.includes('<gpxtpx:hr>'), 'fit2gpx: GPX has every point and heart rate');
 
+  // Batch: free path with two files produces a zip; four files hit the free limit.
+  await page.goto(`${BASE}/batch/`);
+  await page.selectOption('[data-op]', 'fit2gpx');
+  await page.setInputFiles('#batch-files', [fitA, fitB]);
+  check((await page.locator('[data-batch] .queue li').count()) === 2, 'batch: lists files');
+  const zipPath = await save(async () => { await page.click('[data-run]'); await page.locator('[data-result] a[download]').waitFor(); await page.locator('[data-result] a[download]').click(); }, 'batch.zip');
+  const zipList = execFileSync('python3', ['-I', '-c', 'import zipfile,sys; print(sorted(zipfile.ZipFile(sys.argv[1]).namelist()))', zipPath]).toString().trim();
+  check(zipList === "['part-a.gpx', 'part-b.gpx']", `batch: zip holds both conversions (${zipList})`);
+  check((await page.locator('[data-result]').innerText()).includes('2 of 2 processed'), 'batch: reports 2 of 2');
+  await page.setInputFiles('#batch-files', [fitA, fitB]);
+  check(await page.locator('[data-limit]').isVisible() && (await page.locator('[data-run]').isDisabled()), 'batch: free limit of three enforced');
+  check((await page.locator('[data-key-form]').count()) === 0, 'batch: no purchase UI while unconfigured');
+
   // Keyboard: the file control is reachable and labelled.
   await page.goto(`${BASE}/repair-fit-file/`);
   let reached = false;
@@ -171,7 +184,7 @@ try {
   check((await page.locator('input[type=file]').evaluate((el) => el.labels?.[0]?.textContent?.trim())) === 'Choose a .fit file', 'a11y: file input has a label');
 
   // Every page: loads, one h1, title + description, no overflow at phone width, internal links resolve.
-  const paths = ['/', '/repair-fit-file/', '/merge-fit-files/', '/fit-to-gpx/', '/gpx-to-fit/', '/guides/', '/guides/export-original-activity-files/', '/guides/combine-two-activities/', '/guides/why-fit-files-get-corrupted/', '/guides/fit-file-already-uploaded/', '/guides/fit-file-zero-bytes-or-empty/', '/guides/fit-file-wont-upload-to-strava/', '/about/', '/privacy/'];
+  const paths = ['/', '/repair-fit-file/', '/merge-fit-files/', '/fit-to-gpx/', '/gpx-to-fit/', '/batch/', '/guides/', '/guides/export-original-activity-files/', '/guides/combine-two-activities/', '/guides/why-fit-files-get-corrupted/', '/guides/fit-file-already-uploaded/', '/guides/fit-file-zero-bytes-or-empty/', '/guides/fit-file-wont-upload-to-strava/', '/about/', '/privacy/'];
   const links = new Set();
   await page.setViewportSize({ width: 360, height: 740 });
   for (const p of paths) {

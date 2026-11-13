@@ -16,7 +16,7 @@ They arrive from search at the moment of the problem, use the tool once, and lea
 
 ## Why someone would pick it
 
-| Alternative | Its weakness (see OPPORTUNITIES.md for sources) | Our answer |
+| Alternative | Its weakness (see RESEARCH.md for sources) | Our answer |
 |---|---|---|
 | Paid desktop repair tool (about EUR 39) | Price is high for a one-off; Windows only | Free, any browser |
 | GOTOES and similar | Uploads the file to a server; size caps unless you donate | No upload, no cap |
@@ -27,21 +27,19 @@ A free in-browser repair tool already exists elsewhere. Our edge is not exclusiv
 toolbox (repair + join + convert), clear explanations of what was found and done, and a verifiable privacy
 claim (a Content-Security-Policy that blocks the pages from connecting anywhere else).
 
-## Revenue model, in stages
+## Revenue model
 
-Nothing here is earning yet. Each stage starts only when the previous one shows evidence.
+Nothing is earning yet.
 
-1. **Now: free, measure demand.** Cost $0. Goal is indexed pages and real visitors.
-2. **Display ads on guide pages and below tool results** once traffic justifies an application
-   (AdSense first; premium networks have traffic minimums that research could not confirm).
-   Needs the owner's ad account. No ads inside the tool panel, no interstitials.
-3. **One-time paid "batch" pack ($5 to $9)** for people with many files: batch repair/convert, e.g. a whole
-   Strava account export. Sold through a merchant of record with no monthly fee, delivered automatically.
-   Build only if stage 1 shows people returning or processing several files in a row.
-4. **Optional support link.** Already wired in (`PUBLIC_SUPPORT_URL`), hidden until the owner sets one.
+1. **Batch licence, one-time, suggested $9** (built, dormant until the owner creates the Lemon Squeezy product; see
+   PRODUCT.md). Lemon Squeezy is merchant of record (5% + $0.50 per sale, handles tax), so delivery, invoicing and
+   refunds need no owner work. Rationale: the comparable desktop repair tool sells at about €39 and users complain
+   about paying it for one file; a cheap one-time unlock for "many files" fits that complaint.
+2. **Support link** (`PUBLIC_SUPPORT_URL`), dormant until set. Two established competitors run on donations alone.
+3. **Display ads** only after traffic exists and only outside the tool panels.
 
-Rough arithmetic, not a forecast: $100/month needs roughly 15 pack sales at $7, or ad income from a few
-tens of thousands of monthly page views. Which is reachable is unknown until there is traffic data.
+Rough arithmetic, not a forecast: $100/month is about 13 licence sales at $9 after fees. Whether that is reachable is
+unknown until there is traffic data.
 
 ## Costs
 
@@ -52,6 +50,6 @@ A custom domain (about $10 to $12 a year) is optional and needs owner approval.
 
 - Search demand is unmeasured. This is the main risk.
 - A platform (Strava, Garmin) could add native merge/repair.
-- Uploads of our output to Garmin Connect and Strava have not been tested by anyone yet. Structural
-  validity is proven by tests; platform acceptance is not.
+- Uploads of our output to Garmin Connect and Strava have not been tested by anyone yet. Structural validity is
+  proven by tests, and on three forum cases our output matches files Garmin accepted; direct acceptance is not proven.
 - The site name may conflict with an existing trademark; not checked. Owner must clear the final name.

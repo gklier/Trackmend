@@ -19,7 +19,7 @@ mechanism verified to work in this environment (first used 2026-11-12 for three 
 1. Delegate only bounded, independent tasks with a stated deliverable, word limit, and stopping condition.
 2. Briefs reference file paths; never paste the repository into a brief.
 3. Research must separate VERIFIED (with URL) from ESTIMATE. Unsourced numbers are not recorded as facts.
-4. Reuse `OPPORTUNITIES.md` before searching again.
+4. Reuse `RESEARCH.md` before searching again.
 5. The orchestrator reviews every delegated result before it is committed. Subagent output is a draft.
 6. No agent may spend money, create accounts, or publish externally. Those go through the owner (see `OPERATIONS.md`).
 
@@ -36,5 +36,8 @@ mechanism verified to work in this environment (first used 2026-11-12 for three 
 ## Environment facts (audited 2026-11-12)
 
 - Cloud session container: Node 22, npm/pnpm, Python 3.13, git, Chromium + Playwright preinstalled.
-- No Cloudflare credentials and no `wrangler` in the container. `gh` token invalid; GitHub connector failed to connect.
-- Consequence: code can be built and browser-tested here, but creating a repo and deploying needs owner action.
+- No Cloudflare credentials in the container; `gh` token invalid. Pushing to `gklier/trackmend` works through the
+  session's git proxy and deploys automatically via Cloudflare Pages.
+- Garmin forum attachments (`forums.garmin.com/cfs-file/...`) download without login: a free corpus of real corrupt
+  files. Keep them out of the repository.
+- `support.garmin.com` returns 403 to fetches; use Strava's help pages and Garmin's developer site instead.

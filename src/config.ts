@@ -12,4 +12,8 @@ export const site = {
   supportUrl: import.meta.env.PUBLIC_SUPPORT_URL ?? '',
   /** Contact address shown on the About page. Empty = not shown. */
   contactEmail: import.meta.env.PUBLIC_CONTACT_EMAIL ?? '',
+  /** Lemon Squeezy product id for the batch licence. Empty = batch tool stays free-with-limit, no purchase offered. */
+  lsProductId: import.meta.env.PUBLIC_LS_PRODUCT_ID ?? '',
+  /** Lemon Squeezy checkout URL for that product. */
+  lsCheckoutUrl: import.meta.env.PUBLIC_LS_CHECKOUT_URL ?? '',
 };
