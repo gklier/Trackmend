@@ -76,3 +76,27 @@ Against:
 
 Research returned conflicting minimum-traffic figures for Raptive, Mediavine and Ezoic. Treat all as ESTIMATE.
 AdSense has no published traffic minimum but approval is not instant.
+
+## Verification pass, 2026-11-13
+
+One standard search per query, no pages opened. Checked whether the two finalists are being searched for and what already answers them.
+
+**FIT repair.** Demand is visible: Garmin forums carry many corrupt-file threads. Free competitors already answer it:
+FIT File Viewer (browser, donation requested), fitfiletools.com, GOTOES, Strava's upload parser. Forum users report some
+of these failing or being down. Implication: the gap is reliability and privacy, not existence. Our repair must be proven
+on real damaged files before we claim it beats these tools.
+Sources: https://the5krunner.com/tools/fit-file/fit-file-repair/ ,
+https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/396542/help-fixing-a-corrupt-fit-file/1949672 ,
+https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/303002/corrupted-fit-file-won-t-be-repaired-by-online-tool-anyone-can-help-repairing
+
+**Join activities.** Garmin Connect has no native merge; users ask for one repeatedly. Common workaround: export, merge in a
+third-party tool, delete originals, re-upload. Demand is real and long-standing.
+Sources: https://forums.garmin.com/apps-software/mobile-apps-web/f/garmin-connect-web/59993/merge-activities-feature ,
+https://garmin.featureos.app/p/garmin-connect-merge-two-activities
+
+**Weather (NOAA).** NOAA's Climate Data Online is free with a token (5 requests/s, 10,000/day). Free competitors include
+NOWData, SC-ACIS and NCEI Past Weather Tool. Degree-day (65°F base) is a standard, well-documented formula.
+Sources: https://www.ncei.noaa.gov/cdo-web/ , https://toolkit.climate.gov/tool/nowdata-–-noaa-online-weather-data
+
+**Conclusion.** Neither finalist shows an unserved, paying market. Trackmend stays the cheapest live test ($0 to keep).
+Revenue still depends on traffic that does not exist yet and on owner accounts (ads, payments) that only the owner can open.
